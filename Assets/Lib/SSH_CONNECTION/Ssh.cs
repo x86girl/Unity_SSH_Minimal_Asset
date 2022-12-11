@@ -1,9 +1,9 @@
 ﻿using System.Collections;
+using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Text;
 using Renci.SshNet;
-using System.IO;
-
 namespace SshConnect
 {
     public class Ssh
@@ -18,13 +18,35 @@ namespace SshConnect
             this.UserName = UserName_;
         }
 
-        void Create_password_connection(string Host, string UserName, string Password)
+        public void Create_password_connection(string Password)
         {
-            ConnectionInfo ConnNfo = new ConnectionInfo(Host, 22, UserName,
+            ConnectionInfo ConnNfo = new ConnectionInfo(this.Host, 22, this.UserName,
     new AuthenticationMethod[]{
-       new PasswordAuthenticationMethod(UserName,Password),
+       new PasswordAuthenticationMethod(this.UserName,Password),
 
     });
+        }
+
+        public void Create_SFTP_connection(string Password, string folder, string Path, string FileName)
+        {
+            ConnectionInfo ConnNfo = new ConnectionInfo(this.Host, 22, this.UserName,
+            new AuthenticationMethod[]{
+            new PasswordAuthenticationMethod(this.UserName ,Password),
+
+     }
+ );
+            using (var sftp = new SftpClient(ConnNfo))
+            {
+
+                sftp.Connect();
+                sftp.ChangeDirectory(Path);
+                using (var uplfileStream = File.OpenRead(FileName))
+                {
+                    sftp.UploadFile(uplfileStream, FileName);
+                }
+                sftp.Disconnect();
+            }
+
         }
 
 
